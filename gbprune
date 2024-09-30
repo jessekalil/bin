@@ -1,0 +1,14 @@
+#!/bin/bash
+
+for branch in $(git for-each-ref --format='%(refname:short) %(upstream)' refs/heads | awk '$2 !~/^refs\/remotes/'); do
+    read  -n 1 -r -s -p "Are you sure you want to delete $branch? <y/N>" prompt
+    if [[ $prompt == "y" ]]
+    then
+        echo -e "\r$branch \033[31mdeleting...\033[0m\033[0K"
+        git branch -d $branch
+        echo -e "$branch \033[31mdeleted\033[0m\n"
+    else
+        echo -e "\r$branch \033[32mkept\033[0m\033[0K\n"
+    fi
+done
+
