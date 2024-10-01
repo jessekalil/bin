@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# Ensure a branch name is provided as an argument
+if [ -z "$1" ]; then    
+    echo "Usage: $0 <branch-name>"    
+    exit 1
+fi
+
+OTHER_BRANCH=$1
+# Ensure your working directory is clean
+if ! git diff-index --quiet HEAD --; then    
+    echo "You have uncommitted changes. Please commit or stash them before running this script."    
+    exit 1
+fi
+
+# Fetch the latest changesgit fetch origin
+# Checkout the $OTHER_BRANCHgit checkout $OTHER_BRANCH
+# Pull the latest changesgit pull origin $OTHER_BRANCH
+# Checkout the last branchgit checkout -
+# Attempt the merge without committing
+
+merge_output=$(git merge --no-commit --no-ff $OTHER_BRANCH 2>&1)
+merge_status=$?
+
+# Check the exit status
+if [ $merge_status -ne 0 ]; then    
+    echo -e "\e[1;31mMerge conflicts detected.\e[0m"    
+    # Print the merge output if needed    
+    # echo "$merge_output"    
+    # Run another command if there are conflicts    
+    echo "Running custom command due to merge conflicts..."    
+    # Example custom command    
+    # Replace with the command you want to run in case of conflicts    
+    custom_command="echo 'Handling conflicts...'"    
+    eval $custom_command    
+    # Abort the merge    
+else
+    echo -e "\e[1;32mNo merge conflicts detected.\e[0m"    
+    # Optionally, you can continue with the merge process or just leave it as it is.    
+    # git commit -m "Merge branch 'other-branch' into 'main'"
+fi
+
+git merge --abort
