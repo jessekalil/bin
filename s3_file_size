@@ -1,0 +1,57 @@
+#!/bin/bash
+
+# Função para exibir o uso correto do script
+usage() {
+    echo "Uso: $0 --bucket <nome-do-bucket> --profile <aws-profile-name> [FILE_LIST]"
+    echo "Exemplo: $0 --bucket nome-do-seu-bucket --profile meu-perfil-aws 'file1.txt,file2.txt,file3.txt'"
+    exit 1
+}
+
+# Verificar se o número mínimo de argumentos foi passado
+if [ "$#" -lt 5 ]; then
+    usage
+fi
+
+# Processar os argumentos
+if [ "$1" == "--bucket" ] && [ "$3" == "--profile" ]; then
+    BUCKET_NAME="$2"
+    AWS_PROFILE="$4"
+    FILE_LIST="$5"
+else
+    usage
+fi
+
+# Inicializar o tamanho total
+total_size=0
+
+# Loop pelos arquivos na lista
+IFS=',' read -ra FILES <<< "$FILE_LIST"
+for file in "${FILES[@]}"; do
+    # Obter o tamanho do arquivo usando o AWS CLI
+    size=$(aws s3api head-object --bucket "$BUCKET_NAME" --key "$file" --query 'ContentLength' --output text --profile "$AWS_PROFILE" 2>/dev/null)
+    
+    # Verificar se o arquivo existe
+    if [ $? -eq 0 ]; then
+        total_size=$((total_size + size))
+    else
+        echo "Erro: Não foi possível obter o tamanho do arquivo $file"
+    fi
+done
+
+# Formatar o tamanho total para leitura fácil
+if [ $total_size -ge 1073741824 ]; then
+    formatted_size=$(echo "scale=2; $total_size/1073741824" | bc)
+    unit="GB"
+elif [ $total_size -ge 1048576 ]; then
+    formatted_size=$(echo "scale=2; $total_size/1048576" | bc)
+    unit="MB"
+elif [ $total_size -ge 1024 ]; then
+    formatted_size=$(echo "scale=2; $total_size/1024" | bc)
+    unit="KB"
+else
+    formatted_size=$total_size
+    unit="bytes"
+fi
+
+# Exibir o tamanho total formatado
+echo "Tamanho total dos arquivos: $formatted_size $unit"

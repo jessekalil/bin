@@ -1,0 +1,37 @@
+#!/bin/bash
+
+if [ $# -eq 0 ]; then
+  echo "Erro: Nome da pipeline não informado!"
+  echo "Uso: $0 <nome-da-pipeline>"
+  exit 1
+fi
+
+PIPELINE_NAME="$1"
+
+declare -A variables=(
+  ["DB_DATABASE"]="plataforma-testing"
+  ["DB_PASSWORD"]="postgres"
+  ["DB_PASSWORD_MIGRATIONS"]="postgres"
+  ["DB_PORT"]="5432"
+  ["DB_READ_HOST"]="127.0.0.1"
+  ["DB_USER"]="postgres"
+  ["DB_USER_MIGRATIONS"]="postgres"
+  ["DB_WRITE_HOST"]="127.0.0.1"
+  ["NODE_ENV"]="test"
+)
+
+echo "Configurando variáveis para a pipeline: $PIPELINE_NAME"
+echo "----------------------------------------------"
+
+for var_name in "${!variables[@]}"; do
+  var_value="${variables[$var_name]}"
+  echo "Adicionando: $var_name"
+  az pipelines variable create \
+    --name "$var_name" \
+    --value "$var_value" \
+    --pipeline-name "$PIPELINE_NAME" \
+    --allow-override true
+done
+
+echo "----------------------------------------------"
+echo "Todas as variáveis foram adicionadas com sucesso!"

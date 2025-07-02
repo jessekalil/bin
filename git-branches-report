@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# Diretório raiz (use o diretório atual se não for especificado)
+ROOT_DIR=${1:-$(pwd)}
+
+# Verifique se o terminal suporta cores
+if [ -t 1 ]; then
+    RED='\033[0;31m'
+    GREEN='\033[0;32m'
+    CYAN='\033[0;36m'
+    NC='\033[0m' # No Color
+else
+    RED=''
+    GREEN=''
+    CYAN=''
+    NC=''
+fi
+
+echo -e "${CYAN}Scanning for Git repositories in: ${ROOT_DIR}${NC}"
+
+# Percorra todos os subdiretórios
+find "$ROOT_DIR" -type d -name ".git" | while read -r gitdir; do
+    repo_dir=$(dirname "$gitdir") # Diretório do repositório
+    branch=$(git --git-dir="$gitdir" --work-tree="$repo_dir" rev-parse --abbrev-ref HEAD 2>/dev/null)
+    
+    if [ -n "$branch" ]; then
+        echo -e "${GREEN}Repository:${NC} $repo_dir"
+        echo -e "${RED}Current Branch:${NC} $branch"
+        echo
+    else
+        echo -e "${RED}Not a valid Git repository:${NC} $repo_dir"
+        echo
+    fi
+done

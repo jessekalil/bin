@@ -1,0 +1,25 @@
+#!/usr/bin/env zx
+
+void async function main() {
+  // Read input data from stdin
+  const input = await stdin();
+
+  // Split input into lines and process them
+  const lines = input.split('\n');
+  let currentName = '';
+  
+  for (const line of lines) {
+    const nameMatch = line.match(/- name: (.+)/);
+    const valueMatch = line.match(/value: "(.+)"/);
+
+    if (nameMatch) {
+      currentName = nameMatch[1];
+    }
+    if (valueMatch && currentName) {
+      const value = valueMatch[1];
+      console.log(`${currentName}=${value}`);
+      currentName = ''; // Reset for the next pair
+    }
+  }
+}();
+
